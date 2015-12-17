@@ -4,7 +4,7 @@ require 'time'
 # Metar parser based on this spec : http://meteocentre.com/doc/metar.html
 module Metar
   class Parser
-    attr_reader :raw, :fields, :parsed, :readable
+    attr_reader :raw, :fields, :parsed
 
     def initialize(raw)
       @raw = raw
@@ -19,7 +19,6 @@ module Metar
          recent_weather windshear non_standard).each do |sym|
         @parsed[sym] = send("parse_#{sym}")
       end
-      @parsed
     end
 
     def parse_type
@@ -78,11 +77,11 @@ module Metar
     end
 
     def parse_cavok
-      !!(fields.first == 'CAVOK' && fields.shift)
+      @cavok = !!(fields.first == 'CAVOK' && fields.shift)
     end
 
     def parse_visibility
-      return unless (m = %r{((\d/?){1,4})(SM)?$}.match(fields.first))
+      return unless !@cavok && (m = %r{((\d/?){1,4})(SM)?$}.match(fields.first))
 
       fields.shift
       if (operands = m[1].split('/')).count == 2
@@ -94,8 +93,9 @@ module Metar
     end
 
     def parse_runway_visual_range
-      return unless /^R[0-9]+/ =~ fields.first &&
-                    (rm = %r{R(\d{2})([L|R|C])?(/)([P|M])?(\d+)(?:([V])([P|M])?(\d+))?(FT)?/?([N|U|D])?}.match(fields.shift))
+      return unless !@cavok &&
+                    (/^R[0-9]+/ =~ fields.first &&
+                    (rm = %r{R(\d{2})([L|R|C])?(/)([P|M])?(\d+)(?:([V])([P|M])?(\d+))?(FT)?/?([N|U|D])?}.match(fields.shift)))
       {
         runway: rm[1],
         direction: lookup(:directions, rm[2]),
@@ -109,6 +109,8 @@ module Metar
     end
 
     def parse_weather
+      return if @cavok
+
       results = []
       while (res = parse_single_weather(fields.first))
         fields.shift
@@ -131,6 +133,8 @@ module Metar
 
     # TODO: DRY with the weather
     def parse_clouds
+      return if @cavok
+
       results = []
       while (res = parse_single_clouds(fields.first))
         fields.shift
