@@ -2,6 +2,10 @@
 :types:
 - METAR
 - SPECI
+:directions:
+  R: right
+  L: left
+  C: center
 :clouds:
   NCD: no clouds
   SKC: sky clear
@@ -47,7 +51,7 @@
   SS: sandstorm
   FC: funnel cloud
 :recent_weather:
-  REBLSN: Moderate/heavy blowing snow (visibility significantly reduced)reduced
+  REBLSN: Moderate/heavy blowing snow (visibility significantly reduced)
   REDS: Dust Storm
   REFC: Funnel Cloud
   REFZDZ: Freezing Drizzle
