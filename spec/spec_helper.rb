@@ -16,8 +16,8 @@ METAR_EXPECTATIONS = {
               unit: 'KT' },
     cavok: false,
     visibility: { distance: 9999.0, unit: 'meters' },
-    runway_visual_range: {runway: '36', direction: nil, minIndicator: nil, minValue: '1000', maxIndicator: nil, maxValue: '2400', unit: 'FT', trend: 'U'},
-    weather: ["heavy intensity blowing snow", "in the vicinity showers"],
+    runway_visual_range: { runway: '36', direction: nil, minIndicator: nil, minValue: '1000', maxIndicator: nil, maxValue: '2400', unit: 'FT', trend: 'U' },
+    weather: ['heavy intensity blowing snow', 'in the vicinity showers'],
     clouds:   [{ type: 'few',
                  altitude: 1200,
                  cumulonimbus: false,
@@ -31,10 +31,9 @@ METAR_EXPECTATIONS = {
                  cumulonimbus: false,
                  towering_cumulus: false }],
     recent_weather: 'Freezing Rain',
-    temperature: 13,
-    dewpoint: 12,
+    temperature: { temperature: 13, dewpoint: 12 },
     windshear: 'runway 36',
-    altimeter_hpa: 1006,
+    altimeter: { hpa: 1006 },
     non_standard: nil
 },
 
@@ -59,10 +58,9 @@ METAR_EXPECTATIONS = {
                  cumulonimbus: false,
                  towering_cumulus: false }],
     recent_weather: nil,
-    temperature: 10,
-    dewpoint: 10,
+    temperature: { temperature: 10, dewpoint: 10 },
     windshear: nil,
-    altimeter_hpa: 1014,
+    altimeter: { hpa: 1014 },
     non_standard: nil
   },
 
@@ -87,10 +85,9 @@ METAR_EXPECTATIONS = {
                  cumulonimbus: false,
                  towering_cumulus: false }],
     recent_weather: nil,
-    temperature: 6,
-    dewpoint: 5,
+    temperature: { temperature: 6, dewpoint: 5 },
     windshear: nil,
-    altimeter_hpa: 1023,
+    altimeter: { hpa: 1023 },
     non_standard: 'GRN 12010KT 4500 BR BKN040'
   },
 
@@ -111,10 +108,9 @@ METAR_EXPECTATIONS = {
                  cumulonimbus: false,
                  towering_cumulus: false }],
     recent_weather: nil,
-    temperature: -30,
-    dewpoint: -34,
+    temperature: { temperature: -30, dewpoint: -34 },
     windshear: nil,
-    altimeter_in_hg: 30.38,
+    altimeter: { hg: 30.38 },
     non_standard: 'RMK CI1 CI TR SLP333'
   },
 
@@ -144,10 +140,9 @@ METAR_EXPECTATIONS = {
                  cumulonimbus: false,
                  towering_cumulus: false }],
     recent_weather: nil,
-    temperature: -2,
-    dewpoint: -2,
+    temperature: { temperature: -2, dewpoint: -2 },
     windshear: nil,
-    altimeter_in_hg: 29.61,
+    altimeter: { hg: 29.61 },
     non_standard: nil
   }
 
