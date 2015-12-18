@@ -23,6 +23,8 @@ module Metar
       raise Error::ParserError, e.message + " (DATA : #{@raw}) " + "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
     end
 
+    private
+
     def parse_type
       @dictionnary[:types].include?(fields.first) ? fields.shift : 'METAR'
     end
