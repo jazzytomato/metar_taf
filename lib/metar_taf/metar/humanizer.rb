@@ -60,8 +60,9 @@ module Metar
     end
 
     def read_temperature
-      add("temperature #{temperature[:temperature]} degrees") if temperature && temperature[:temperature]
-      add("dew point #{temperature[:dewpoint]} degrees") if temperature && temperature[:dewpoint]
+      return unless temperature
+      add("temperature #{temperature[:temperature]} degrees") if temperature[:temperature]
+      add("dew point #{temperature[:dewpoint]} degrees") if temperature[:dewpoint]
     end
 
     def read_altimeter

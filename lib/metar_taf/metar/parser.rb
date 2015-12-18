@@ -19,6 +19,7 @@ module Metar
          recent_weather windshear non_standard).each do |sym|
         @parsed[sym] = send("parse_#{sym}")
       end
+      true
     rescue => e
       raise Error::ParserError, e.message + " (DATA : #{@raw}) " + "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
     end
@@ -60,6 +61,10 @@ module Metar
       wind = fields.shift
       results = { variation: nil, direction: nil, unit: nil }
 
+      return unless (unit = /KT|MPS|KPH|SM$/.match(wind))
+
+      results[:unit] = unit[0]
+
       if (direction = wind[0..2]) == 'VRB'
         results[:variable] = true
       else
@@ -68,10 +73,6 @@ module Metar
       end
       results[:speed] = wind[3..4].to_i
       results[:gust] = wind[6..7].to_i if wind[5] == 'G'
-
-      if (unit = /KT|MPS|KPH|SM$/.match(wind))
-        results[:unit] = unit[0]
-      end
 
       # 260V340 -> variations min 260 max 340
       if (wind_var = /^([0-9]{3})V([0-9]{3})$/.match(fields.first))
@@ -146,11 +147,11 @@ module Metar
 
     def parse_single_clouds(entry)
       meaning, rest = try_lookup(:clouds, entry)
-      return unless meaning && rest
+      return unless meaning
 
       {
         type: meaning,
-        altitude: rest.to_i * 100,
+        altitude: (rest.to_i * 100 if rest),
         cumulonimbus: !(/CB/ =~ entry).nil?,
         towering_cumulus: !(/TCU/ =~ entry).nil?
       }
@@ -177,6 +178,7 @@ module Metar
     # M10/M10 or 15/13 or M01/01 etc.
     def parse_temperature
       return unless (temp = fields.shift)
+
       temp = temp.gsub(/M/, '-').split('/')
       {
         temperature: (temp[0].to_i if temp[0]), # nil.to_i => 0 which is wrong
@@ -189,7 +191,7 @@ module Metar
     def parse_altimeter
       return unless (entry = fields.shift)
 
-      if entry[0] == 'A'
+      if entry[0] == 'A' && entry.length > 2
         { hg: entry[1..-1].insert(2, '.').to_f }
       elsif entry[0] == 'Q'
         { hpa: entry[1..-1].to_i }

@@ -20,15 +20,21 @@ describe Metar::Parser do
         expect { @humanizer = Metar::Humanizer.new(File.readlines(metar, encoding: 'ISO-8859-1')[1]) }.to raise_error(Error::ParserError)
       end
     end
+  end
 
-    f = File.open('tmp/parsing.txt', 'a')
+  OUTPUT_READABLE = false
+
+  describe 'parse all files' do
+    f = File.open('tmp/parsing.txt', 'a') if OUTPUT_READABLE
     Dir.glob('spec/metar/resources/valid/*.TXT') do |metar|
       it "should parse #{metar}" do
         expect { @humanizer = Metar::Humanizer.new(File.readlines(metar, encoding: 'ISO-8859-1')[1]) }.not_to raise_error
         expect { @humanizer.read }.not_to raise_error
-        f.puts @humanizer.raw
-        f.puts @humanizer.readable
-        f.puts
+        if OUTPUT_READABLE
+          f.puts @humanizer.raw
+          f.puts @humanizer.readable
+          f.puts
+        end
       end
     end
   end
