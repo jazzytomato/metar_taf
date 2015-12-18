@@ -5,6 +5,7 @@ module Metar
     def initialize(raw)
       parser = Metar::Parser.new(raw)
       parser.process
+      @raw = raw
       @parsed = parser.parsed
       @readable = ''
     end
@@ -17,8 +18,9 @@ module Metar
       add(read_wind)
       add('clear sky') if cavok
       add("visibility #{visibility[:distance]} #{visibility[:unit]}") if visibility
-      add("temperature #{temperature[:temperature]} degrees, dew point #{temperature[:dewpoint]} degrees")
-      add('pressure altitude ' + (altimeter[:hpa] ? altimeter[:hpa].to_s + ' hpa' : altimeter[:hg].to_s + ' inches of mercury')) if altimeter[:hpa] || altimeter[:hg]
+      add("temperature #{temperature[:temperature]} degrees") if temperature && temperature[:temperature]
+      add("dew point #{temperature[:dewpoint]} degrees") if temperature && temperature[:dewpoint]
+      add('pressure altitude ' + (altimeter[:hpa] ? altimeter[:hpa].to_s + ' hpa' : altimeter[:hg].to_s + ' inches of mercury')) if altimeter && (altimeter[:hpa] || altimeter[:hg])
       add(read_runway_visual_range)
       add("weather : #{weather.join(', ')}") if weather
       add(read_clouds)
@@ -28,8 +30,10 @@ module Metar
       @readable.strip!.gsub!(/\s+/, ' ')
     end
 
+    # append the given string to the readable final string.
+    # also capitalize the letters followed by a dot
     def add(str)
-      @readable += capitalize_first(str) + (str.length > 1 ? '. ' : '')
+      @readable += str.sub(/./) { $&.upcase } + (str.length > 1 ? '. ' : '')
     end
 
     def read_wind
@@ -38,7 +42,9 @@ module Metar
       str = ''
       str += 'variable ' if wind[:variable]
       str += "(from #{wind[:variation][:min]} to #{wind[:variation][:max]} degrees) " if wind[:variation]
-      str + "wind of #{wind[:speed]}#{wind[:unit]}" + (wind[:direction] ? " at #{wind[:direction]} degrees" : '')
+      str += "wind of #{wind[:speed]}#{wind[:unit]}" + (wind[:direction] ? " at #{wind[:direction]} degrees" : '')
+      str += " with gusts to #{wind[:gust]}#{wind[:unit]}" if wind[:gust]
+      str
     end
 
     def read_runway_visual_range
@@ -61,10 +67,6 @@ module Metar
         str += ' and towering_cumulus' if c[:towering_cumulus]
         str
       end.join(', ')
-    end
-
-    def capitalize_first(str)
-      (str.slice(0) || '').upcase + (str.slice(1..-1) || '')
     end
 
     # Just so I can use weather instead of parsed[:weather] etc...

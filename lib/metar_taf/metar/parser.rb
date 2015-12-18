@@ -19,6 +19,8 @@ module Metar
          recent_weather windshear non_standard).each do |sym|
         @parsed[sym] = send("parse_#{sym}")
       end
+    rescue => e
+      raise Error::ParserError, e.message + " (DATA : #{@raw}) " + "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
     end
 
     def parse_type
@@ -54,7 +56,7 @@ module Metar
     # VRB02KT -> Wind direction variable with a speed of 2 knots
     def parse_wind
       wind = fields.shift
-      results = { variation: nil, direction: nil }
+      results = { variation: nil, direction: nil, unit: nil }
 
       if (direction = wind[0..2]) == 'VRB'
         results[:variable] = true
@@ -65,7 +67,9 @@ module Metar
       results[:speed] = wind[3..4].to_i
       results[:gust] = wind[6..7].to_i if wind[5] == 'G'
 
-      results[:unit] = /KT|MPS|KPH|SM$/.match(wind)[0]
+      if (unit = /KT|MPS|KPH|SM$/.match(wind))
+        results[:unit] = unit[0]
+      end
 
       # 260V340 -> variations min 260 max 340
       if (wind_var = /^([0-9]{3})V([0-9]{3})$/.match(fields.first))
@@ -81,15 +85,10 @@ module Metar
     end
 
     def parse_visibility
-      return unless !@cavok && (m = %r{((\d/?){1,4})(SM)?$}.match(fields.first))
+      return unless !@cavok && (m = %r{^(\d{4})|(\d/?\d?)(SM)$}.match(fields.first))
 
       fields.shift
-      if (operands = m[1].split('/')).count == 2
-        distance = operands[0].to_f / operands[1].to_f
-      else
-        distance = m[1].to_f
-      end
-      { distance: distance, unit: m[3] || 'meters' }
+      { distance: m[1] || m[2], unit: m[3] || 'meters' }
     end
 
     def parse_runway_visual_range
@@ -126,12 +125,12 @@ module Metar
       # as long as we find a corresponding entry in the dictionnary (meaning) and that there's still work to do
       while meaning && rest
         meaning, rest = try_lookup(:weather, rest)
-        sentence += ' ' + meaning
+        sentence += (' ' + meaning) if meaning
       end
       sentence
     end
 
-    # TODO: DRY with the weather
+    # TODO: DRY with the weather ?
     def parse_clouds
       return if @cavok
 
@@ -159,6 +158,8 @@ module Metar
     # take the first 4, then 3, until 1 character and return the first match
     # and the rest of the string for potential further lookups
     def try_lookup(type, entry)
+      return [false, false] unless type && entry
+
       3.downto(0) do |n|
         value = lookup(type, entry[0..n])
         return [value, entry[n + 1..-1]] if value
@@ -173,10 +174,11 @@ module Metar
 
     # M10/M10 or 15/13 or M01/01 etc.
     def parse_temperature
-      temp = fields.shift.gsub(/M/, '-').split('/')
+      return unless (temp = fields.shift)
+      temp = temp.gsub(/M/, '-').split('/')
       {
-        temperature: temp[0].to_i,
-        dewpoint: temp[1].to_i
+        temperature: (temp[0].to_i if temp[0]), # nil.to_i => 0 which is wrong
+        dewpoint: (temp[1].to_i if temp[1])
       }
     end
 
@@ -206,7 +208,6 @@ module Metar
       fields.shift
 
       if (entry = fields.shift) == 'ALL'
-        puts entry
         fields.shift
         'all runways'
       elsif (m = /RWY(\d{1,2})(R|L|C)?/.match(entry))
