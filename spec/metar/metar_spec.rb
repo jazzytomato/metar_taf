@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'metar_expectations'
 
 describe Metar::Parser do
   describe '#parse' do

@@ -6,72 +6,65 @@ module Metar
       parser = Metar::Parser.new(raw)
       parser.process
       @parsed = parser.parsed
+      @readable = ''
     end
 
-    { raw: 'METAR EFJY 171950Z AUTO CCA 27006KT 220V310 9999 R36/1000V2400FT/U +BLSN VCSH FEW012 SCT015 BKN060 13/12 Q1006 REFZRA WS RWY36',
-    parsed:
-      { type: 'METAR',
-        station: 'EFJY',
-        time: Time.strptime('171950+0000', '%d%H%M%z'),
-        auto: true,
-        correction: 'A',
-        wind:   { speed: 6,
-                  direction: 270,
-                  variable: true,
-                  variation: { min: 220, max: 310 },
-                  unit: 'KT' },
-        cavok: false,
-        visibility: { distance: 9999.0, unit: 'meters' },
-        runway_visual_range: { runway: '36', direction: nil, minIndicator: nil, minValue: '1000', maxIndicator: nil, maxValue: '2400', unit: 'FT', trend: 'U' },
-        weather: ['heavy intensity blowing snow', 'in the vicinity showers'],
-        clouds:   [{ type: 'few',
-                     altitude: 1200,
-                     cumulonimbus: false,
-                     towering_cumulus: false },
-                   { type: 'scattered',
-                     altitude: 1500,
-                     cumulonimbus: false,
-                     towering_cumulus: false },
-                   { type: 'broken',
-                     altitude: 6000,
-                     cumulonimbus: false,
-                     towering_cumulus: false }],
-        recent_weather: 'Freezing Rain',
-        temperature: { temperature: 13, dewpoint: 12 },
-        windshear: 'runway 36',
-        altimeter: { hpa: 1006 },
-        non_standard: nil
-    },
-    readable: ''
-  }
-
     def read
-      str =  "#{station}" + (auto ? ' (autostation)' : '') + '. '
-      str += 'CORRECTED report. ' if correction == true
-      str += "Correction ##{correction}. " if correction && correction != true
-      str += parsed[:time].strftime('%b %e, %H:%M UTC') + '. '
-      str += read_wind
-      str += 'Clear sky. ' if cavok
-      str += "Visibility #{visibility[:distance]} #{visibility[:unit]}. " if visibility
-      str += "Temperature #{temperature[:temperature]} degrees, Dew point #{temperature[:dewpoint]} degrees. "
-      str += 'Pressure altitude ' + (altimeter[:hpa] ? altimeter[:hpa].to_s + ' hpa' : altimeter[:hg].to_s + ' inches of mercury') + '. ' if altimeter[:hpa] || altimeter[:hg]
-      @readable = str.strip
+      add("#{station}" + (auto ? ' (autostation)' : ''))
+      add('CORRECTED report') if correction == true
+      add("correction ##{correction}") if correction && correction != true
+      add(parsed[:time].strftime('%b %e, %H:%M UTC'))
+      add(read_wind)
+      add('clear sky') if cavok
+      add("visibility #{visibility[:distance]} #{visibility[:unit]}") if visibility
+      add("temperature #{temperature[:temperature]} degrees, dew point #{temperature[:dewpoint]} degrees")
+      add('pressure altitude ' + (altimeter[:hpa] ? altimeter[:hpa].to_s + ' hpa' : altimeter[:hg].to_s + ' inches of mercury')) if altimeter[:hpa] || altimeter[:hg]
+      add(read_runway_visual_range)
+      add("weather : #{weather.join(', ')}") if weather
+      add(read_clouds)
+      add("#{recent_weather}") if recent_weather
+      add("windshear was encountered on #{windshear}") if windshear
+      add("not parsed : #{non_standard}") if non_standard
+      @readable.strip!.gsub!(/\s+/, ' ')
+    end
+
+    def add(str)
+      @readable += capitalize_first(str) + (str.length > 1 ? '. ' : '')
     end
 
     def read_wind
       return '' unless wind
 
       str = ''
-      str += 'Variable ' if wind[:variable]
+      str += 'variable ' if wind[:variable]
       str += "(from #{wind[:variation][:min]} to #{wind[:variation][:max]} degrees) " if wind[:variation]
-      str + "Wind of #{wind[:speed]}#{wind[:unit]}" + (wind[:direction] ? " at #{wind[:direction]} degrees. " : '. ')
+      str + "wind of #{wind[:speed]}#{wind[:unit]}" + (wind[:direction] ? " at #{wind[:direction]} degrees" : '')
     end
 
     def read_runway_visual_range
       return '' unless runway_visual_range
 
-      str = "Visual range for runway ##{runway_visual_range[:runway]} "
-      str += runway_visual_range[:direction]
+      str = "visual range for runway ##{runway_visual_range[:runway]} #{runway_visual_range[:direction]} is "
+      str += 'varying from ' if runway_visual_range[:maxValue]
+      str += "#{runway_visual_range[:minIndicator]} #{runway_visual_range[:minValue]} "
+      str += "to #{runway_visual_range[:maxIndicator]} #{runway_visual_range[:maxValue]} " if runway_visual_range[:maxValue]
+      str + "#{runway_visual_range[:unit]}, the trend is #{runway_visual_range[:trend]}"
+    end
+
+    # TODO: check the unit
+    def read_clouds
+      return '' unless clouds
+
+      clouds.map do |c|
+        str = "#{c[:type]} clouds at #{c[:altitude]} feets"
+        str += ' and cumulonimbus' if c[:cumulonimbus]
+        str += ' and towering_cumulus' if c[:towering_cumulus]
+        str
+      end.join(', ')
+    end
+
+    def capitalize_first(str)
+      (str.slice(0) || '').upcase + (str.slice(1..-1) || '')
     end
 
     def method_missing(method_name, *arguments, &block)

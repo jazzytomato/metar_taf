@@ -104,7 +104,7 @@ module Metar
         maxIndicator: rm[7],
         maxValue: rm[8],
         unit: rm[9],
-        trend: rm[10]
+        trend: lookup(:trends, rm[10])
       }
     end
 

@@ -6,6 +6,13 @@
   R: right
   L: left
   C: center
+:trends:
+  U: upward
+  D: downward
+  N: no change
+:qualifiers:
+  P: more than
+  M: less than
 :clouds:
   NCD: no clouds
   SKC: sky clear

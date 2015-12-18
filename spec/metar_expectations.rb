@@ -21,7 +21,7 @@ METAR_EXPECTATIONS = [
       windshear: nil,
       non_standard: nil
     },
-    readable: 'Dec 9, 1450 UTC. Wind of 13 KT ar 210 degrees. Clear sky. Temperature 10 degrees, dew point 6 degrees. Pressure altitude 1031 hPa'
+    readable: 'EGGW. Dec 9, 14:50 UTC. Wind of 13KT at 210 degrees. Clear sky. Temperature 10 degrees, dew point 6 degrees. Pressure altitude 1031 hpa.'
   },
 
   { raw: 'METAR EFJY 171950Z AUTO CCA 27006KT 220V310 9999 R36/1000V2400FT/U +BLSN VCSH FEW012 SCT015 BKN060 13/12 Q1006 REFZRA WS RWY36',
@@ -38,7 +38,7 @@ METAR_EXPECTATIONS = [
                   unit: 'KT' },
         cavok: false,
         visibility: { distance: 9999.0, unit: 'meters' },
-        runway_visual_range: { runway: '36', direction: nil, minIndicator: nil, minValue: '1000', maxIndicator: nil, maxValue: '2400', unit: 'FT', trend: 'U' },
+        runway_visual_range: { runway: '36', direction: nil, minIndicator: nil, minValue: '1000', maxIndicator: nil, maxValue: '2400', unit: 'FT', trend: 'upward' },
         weather: ['heavy intensity blowing snow', 'in the vicinity showers'],
         clouds:   [{ type: 'few',
                      altitude: 1200,
@@ -58,7 +58,7 @@ METAR_EXPECTATIONS = [
         altimeter: { hpa: 1006 },
         non_standard: nil
     },
-    readable: ''
+    readable: 'EFJY (autostation). Correction #A. Dec 17, 19:50 UTC. Variable (from 220 to 310 degrees) wind of 6KT at 270 degrees. Visibility 9999.0 meters. Temperature 13 degrees, dew point 12 degrees. Pressure altitude 1006 hpa. Visual range for runway #36 is varying from 1000 to 2400 FT, the trend is upward. Weather : heavy intensity blowing snow, in the vicinity showers. Few clouds at 1200 feets, scattered clouds at 1500 feets, broken clouds at 6000 feets. Freezing Rain. Windshear was encountered on runway 36.'
   },
 
   { raw: 'SPECI EGGW 151750Z 14012KPH 6000 RA BKN003 OVC004 10/10 Q1014',
@@ -87,7 +87,7 @@ METAR_EXPECTATIONS = [
         altimeter: { hpa: 1014 },
         non_standard: nil
       },
-    readable: ''
+    readable: 'EGGW. Dec 15, 17:50 UTC. Wind of 12KPH at 140 degrees. Visibility 6000.0 meters. Temperature 10 degrees, dew point 10 degrees. Pressure altitude 1014 hpa. Weather : rain. Broken clouds at 300 feets, overcast clouds at 400 feets.'
   },
 
   { raw: 'EHLW 151755Z AUTO 11011KT 060V150 4000 BR BKN048 06/05 Q1023 GRN 12010KT 4500 BR BKN040',
@@ -116,7 +116,7 @@ METAR_EXPECTATIONS = [
         altimeter: { hpa: 1023 },
         non_standard: 'GRN 12010KT 4500 BR BKN040'
       },
-    readable: ''
+    readable: 'EHLW (autostation). Dec 15, 17:55 UTC. Variable (from 60 to 150 degrees) wind of 11KT at 110 degrees. Visibility 4000.0 meters. Temperature 6 degrees, dew point 5 degrees. Pressure altitude 1023 hpa. Weather : mist. Broken clouds at 4800 feets. Not parsed : GRN 12010KT 4500 BR BKN040.'
   },
 
   { raw: 'CYSB 231400Z 30006KT 20SM FEW180 M30/M34 A3038 RMK CI1 CI TR SLP333',
@@ -141,7 +141,7 @@ METAR_EXPECTATIONS = [
         altimeter: { hg: 30.38 },
         non_standard: 'RMK CI1 CI TR SLP333'
       },
-    readable: ''
+    readable: 'CYSB. Dec 23, 14:00 UTC. Wind of 6KT at 300 degrees. Visibility 20.0 SM. Temperature -30 degrees, dew point -34 degrees. Pressure altitude 30.38 inches of mercury. Few clouds at 18000 feets. Not parsed : RMK CI1 CI TR SLP333.'
   },
 
   { raw: 'KBIL 162256Z VRB17G27KT 3/4SM FEW070 SCT085 BKN110 M02/M02 A2961',
@@ -175,7 +175,7 @@ METAR_EXPECTATIONS = [
         altimeter: { hg: 29.61 },
         non_standard: nil
       },
-    readable: ''
+    readable: 'KBIL. Dec 16, 22:56 UTC. Variable wind of 17KT. Visibility 0.75 SM. Temperature -2 degrees, dew point -2 degrees. Pressure altitude 29.61 inches of mercury. Few clouds at 7000 feets, scattered clouds at 8500 feets, broken clouds at 11000 feets.'
   }
 
 ]
