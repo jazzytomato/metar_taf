@@ -67,6 +67,7 @@ module Metar
       (str.slice(0) || '').upcase + (str.slice(1..-1) || '')
     end
 
+    # Just so I can use weather instead of parsed[:weather] etc...
     def method_missing(method_name, *arguments, &block)
       if parsed && parsed.keys.include?(method_name)
         parsed[method_name]
@@ -76,7 +77,7 @@ module Metar
     end
 
     def respond_to?(method_name, include_private = false)
-      (parsed && parsed.keys.include?(method_name.to_s.split('_')[0])) || super
+      parsed && parsed.keys.include?(method_name) || super
     end
   end
 end
